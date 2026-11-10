@@ -7,7 +7,8 @@
     "dev:api": "npm --prefix apps/api run start:dev",
     "build": "npm --prefix apps/api run build && npm --prefix apps/web run build",
     "lint": "npm --prefix apps/api run lint && npm --prefix apps/web run lint",
-    "test": "npm --prefix apps/api run test"
+    "test": "npm --prefix apps/api run test",
+    "seed": "npm --prefix apps/api run seed"
   },
   "engines": {
     "node": ">=22"
