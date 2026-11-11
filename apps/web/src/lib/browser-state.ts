@@ -6,7 +6,8 @@ export type NavigationSource =
   | "back"
   | "forward";
 
-export type NavigationEntry = {
+export type PageEntry = {
+  kind: "page";
   key: string;
   address: string;
   title: string | null;
@@ -16,13 +17,31 @@ export type NavigationEntry = {
   source: NavigationSource;
 };
 
+export type SearchResultSnapshot = {
+  id: string;
+  address: string;
+  title: string;
+  authorName: string;
+  excerpt: string;
+};
+
+export type SearchEntry = {
+  kind: "search";
+  key: string;
+  query: string;
+  results: SearchResultSnapshot[];
+};
+
+export type BrowserEntry = PageEntry | SearchEntry;
+
 export type BrowserState = {
-  entries: NavigationEntry[];
+  entries: BrowserEntry[];
   index: number;
 };
 
 export type BrowserAction =
-  | { type: "navigate"; entry: NavigationEntry }
+  | { type: "navigate"; entry: BrowserEntry }
+  | { type: "replace"; entry: BrowserEntry }
   | { type: "back" }
   | { type: "forward" }
   | { type: "reset" };
@@ -47,12 +66,18 @@ export function browserReducer(
       return state.index < state.entries.length - 1
         ? { ...state, index: state.index + 1 }
         : state;
+    case "replace": {
+      if (state.index < 0) return state;
+      const entries = [...state.entries];
+      entries[state.index] = action.entry;
+      return { ...state, entries };
+    }
     case "reset":
       return initialBrowserState;
   }
 }
 
-export function currentEntry(state: BrowserState): NavigationEntry | null {
+export function currentEntry(state: BrowserState): BrowserEntry | null {
   return state.entries[state.index] ?? null;
 }
 

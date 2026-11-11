@@ -4,11 +4,13 @@ import {
   canGoForward,
   currentEntry,
   initialBrowserState,
-  type NavigationEntry,
+  type BrowserState,
+  type PageEntry,
 } from "./browser-state";
 
-function entry(address: string, html = `<p>${address}</p>`): NavigationEntry {
+function entry(address: string, html = `<p>${address}</p>`): PageEntry {
   return {
+    kind: "page",
     key: address,
     address,
     title: address,
@@ -17,6 +19,12 @@ function entry(address: string, html = `<p>${address}</p>`): NavigationEntry {
     status: "found",
     source: "link",
   };
+}
+
+function currentPage(state: BrowserState): PageEntry {
+  const current = currentEntry(state);
+  if (current?.kind !== "page") throw new Error("Expected the current entry to be a page");
+  return current;
 }
 
 describe("browserReducer", () => {
@@ -28,10 +36,10 @@ describe("browserReducer", () => {
 
     state = browserReducer(state, { type: "back" });
     state = browserReducer(state, { type: "back" });
-    expect(currentEntry(state)?.address).toBe("b.zz");
+    expect(currentPage(state).address).toBe("b.zz");
 
     state = browserReducer(state, { type: "forward" });
-    expect(currentEntry(state)?.address).toBe("c.zz");
+    expect(currentPage(state).address).toBe("c.zz");
   });
 
   it("discards the forward branch after a new navigation", () => {
@@ -43,7 +51,7 @@ describe("browserReducer", () => {
     state = browserReducer(state, { type: "back" });
     state = browserReducer(state, { type: "navigate", entry: entry("e.zz") });
 
-    expect(state.entries.map(({ address }) => address)).toEqual([
+    expect(state.entries.map((item) => (item.kind === "page" ? item.address : "search"))).toEqual([
       "a.zz",
       "b.zz",
       "e.zz",
@@ -62,11 +70,11 @@ describe("browserReducer", () => {
     });
     state = browserReducer(state, { type: "back" });
 
-    expect(currentEntry(state)?.html).toBe("<p>Original snapshot</p>");
+    expect(currentPage(state).html).toBe("<p>Original snapshot</p>");
   });
 
   it("keeps a broken address in the navigation trail", () => {
-    const broken: NavigationEntry = {
+    const broken: PageEntry = {
       ...entry("missing.zz"),
       title: null,
       html: null,
@@ -79,5 +87,30 @@ describe("browserReducer", () => {
     });
 
     expect(currentEntry(state)).toEqual(broken);
+  });
+
+  it("restores a saved search entry after opening a result", () => {
+    const search = {
+      kind: "search" as const,
+      key: "search-moss",
+      query: "moss",
+      results: [
+        {
+          id: "1",
+          address: "mosslibrary.zz",
+          title: "The Moss Library",
+          authorName: "Noor",
+          excerpt: "Moss records a place without words.",
+        },
+      ],
+    };
+    let state = browserReducer(initialBrowserState, { type: "navigate", entry: search });
+    state = browserReducer(state, {
+      type: "navigate",
+      entry: entry("mosslibrary.zz"),
+    });
+    state = browserReducer(state, { type: "back" });
+
+    expect(currentEntry(state)).toEqual(search);
   });
 });
