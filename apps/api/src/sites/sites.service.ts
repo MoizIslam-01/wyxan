@@ -6,7 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Person } from '../people/schemas/person.schema.js';
-import { normalizeAddress, validateAddress } from '../common/address.js';
+import { validateAddress } from '../common/address.js';
 import { prepareSiteContent } from '../common/content.js';
 import { CreateSiteDto } from './dto/create-site.dto.js';
 import { Site } from './schemas/site.schema.js';
@@ -57,7 +57,13 @@ export class SitesService {
     return this.sites
       .find(
         { $text: { $search: query } },
-        { score: { $meta: 'textScore' }, html: 0, safeHtml: 0 },
+        {
+          score: { $meta: 'textScore' },
+          address: 1,
+          title: 1,
+          searchableText: 1,
+          authorId: 1,
+        },
       )
       .sort({ score: { $meta: 'textScore' } })
       .limit(25)
@@ -66,7 +72,4 @@ export class SitesService {
       .exec();
   }
 
-  normalizeAddress(rawAddress: string) {
-    return normalizeAddress(rawAddress);
-  }
 }

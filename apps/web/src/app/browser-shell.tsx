@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useReducer, useState } from "react";
+import { FormEvent, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   browserReducer,
   canGoBack,
@@ -46,6 +46,7 @@ function normalizeAddress(value: string) {
 
 export function BrowserShell() {
   const [state, dispatch] = useReducer(browserReducer, initialBrowserState);
+  const scrollPositions = useRef<Record<string, number>>({});
   const [people, setPeople] = useState<Person[]>([]);
   const [personId, setPersonId] = useState("");
   const [address, setAddress] = useState("");
@@ -262,6 +263,7 @@ export function BrowserShell() {
   }
 
   function changePerson(nextPersonId: string) {
+    scrollPositions.current = {};
     setPersonId(nextPersonId);
     setAddress("");
     setError(null);
@@ -617,6 +619,8 @@ export function BrowserShell() {
                 key={current.key}
                 html={current.html}
                 title={current.title ?? current.address}
+                getScrollY={() => scrollPositions.current[current.key] ?? 0}
+                onScroll={(position) => { scrollPositions.current[current.key] = position; }}
                 onNavigate={(nextAddress) => void navigate(nextAddress, "link")}
               />
             </div>

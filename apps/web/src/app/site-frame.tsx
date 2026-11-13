@@ -6,6 +6,8 @@ type SiteFrameProps = {
   html: string;
   title: string;
   onNavigate: (address: string) => void;
+  getScrollY?: () => number;
+  onScroll?: (position: number) => void;
 };
 
 const documentStyles = `
@@ -25,13 +27,19 @@ const documentStyles = `
   th, td { padding: 8px 10px; border: 1px solid #d9dfdb; text-align: left; }
 `;
 
-export function SiteFrame({ html, title, onNavigate }: SiteFrameProps) {
+export function SiteFrame({ html, title, onNavigate, getScrollY, onScroll }: SiteFrameProps) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const source = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${documentStyles}</style></head><body>${html}</body></html>`;
 
   function connectLinks() {
     const document = frameRef.current?.contentDocument;
     if (!document) return;
+
+    const frameWindow = frameRef.current?.contentWindow;
+    frameWindow?.scrollTo(0, getScrollY?.() ?? 0);
+    frameWindow?.addEventListener("scroll", () => {
+      onScroll?.(frameWindow.scrollY);
+    }, { passive: true });
 
     document.addEventListener("click", (event) => {
       const target = event.target as Element | null;
