@@ -24,20 +24,9 @@ npm run dev:api
 npm run dev:web
 ```
 
-The web app runs at `http://localhost:3000` and the API at `http://localhost:4000`. Run `npm run seed` again to confirm it reports the same 5 people, 10 sites, and 32 seeded visits. The seed updates those records without duplicating them.
+The web app runs at `http://localhost:3000` and the API at `http://localhost:4000`. If port 3000 is occupied and Next.js starts on `http://localhost:3001`, change `WEB_ORIGIN` in the root `.env` to `http://localhost:3001` and restart the API. The API only accepts browser requests from the origin set there. `NEXT_PUBLIC_API_URL` should still point to the API on port 4000. Run `npm run seed` again to confirm it reports the same 5 people, 10 sites, and 32 seeded visits. The seed updates those records without duplicating them.
 
-## Deploy: Vercel, Railway, Atlas
-
-Deploy the NestJS API to Railway first, then the Next.js frontend to Vercel. Both services use this repository; each has its own root directory. The database stays on Atlas.
-
-1. In Railway, create a service from the GitHub repository and set **Root Directory** to `/apps/api`. Set **Build Command** to `npm run build`, **Start Command** to `npm run start:prod`, and **Healthcheck Path** to `/api`. Add `MONGODB_URI` in Railway Variables. Generate a public Railway domain and check `https://YOUR-API.up.railway.app/api` returns `{"status":"ok","service":"small-web-api"}`. Railway provides `PORT`; the API listens on it automatically.
-2. In Vercel, import the same GitHub repository, set **Root Directory** to `apps/web`, and use the detected Next.js settings. Add `NEXT_PUBLIC_API_URL=https://YOUR-API.up.railway.app` to Vercel Environment Variables, with no trailing slash or `/api`. Deploy the frontend.
-3. In Railway, set `WEB_ORIGIN=https://YOUR-WEB.vercel.app` to the exact Vercel production origin, with no trailing slash. Redeploy the API. If the Vercel URL changes, update `WEB_ORIGIN` and redeploy. `NEXT_PUBLIC_API_URL` is embedded in the frontend build, so changing it requires a new Vercel deployment.
-4. Seed the Atlas database once from a trusted local checkout using `npm run seed` with your local `.env` pointing to the same Atlas cluster. Do not run the seed as an automatic deploy command; it deliberately rewrites the demo records to their deterministic state.
-
-Atlas must allow connections from both your computer and the Railway service. Railway's outbound IP may change unless you configure a static egress IP; set Atlas Network Access accordingly. Use a dedicated database user and keep its credentials in Railway Variables and local `.env`, never in Git.
-
-The tracked `.env.example` contains placeholder local defaults. `.env` and `.env.local` are ignored by Git. Reviewers can copy the example, supply their own MongoDB URI, install dependencies, seed, and run both apps with the commands above. Share the repository and deployed frontend URL; do not share your credentials.
+The tracked `.env.example` contains placeholder local defaults. `.env` and `.env.local` are ignored by Git. Reviewers can copy the example, supply their own MongoDB URI, install dependencies, seed, and run both apps with the commands above. Share the repository link without sharing your credentials.
 
 ## API
 
