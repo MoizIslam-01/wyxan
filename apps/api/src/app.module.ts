@@ -21,6 +21,8 @@ import { VisitsModule } from './visits/visits.module.js';
           'MONGODB_URI',
           'mongodb://localhost:27017/small-web',
         ),
+        serverSelectionTimeoutMS: 10_000,
+        retryAttempts: 0,
       }),
     }),
     PeopleModule,

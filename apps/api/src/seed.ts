@@ -3,7 +3,7 @@ import { AppModule } from './app.module.js';
 import { SeedService } from './seed/seed.service.js';
 
 const app = await NestFactory.createApplicationContext(AppModule, {
-  logger: false,
+  logger: ['error'],
 });
 
 try {

@@ -28,16 +28,16 @@ export class Visit {
   @Prop({ type: Types.ObjectId, ref: Site.name, default: null })
   siteId: Types.ObjectId | null;
 
-  @Prop({ required: true, enum: ['found', 'not-found'] })
+  @Prop({ type: String, required: true, enum: ['found', 'not-found'] })
   status: 'found' | 'not-found';
 
-  @Prop({ required: true, enum: visitSources })
+  @Prop({ type: String, required: true, enum: visitSources })
   source: VisitSource;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   titleSnapshot: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   htmlSnapshot: string | null;
 
   @Prop({ required: false, unique: true, sparse: true })
